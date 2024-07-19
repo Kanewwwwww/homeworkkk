@@ -1,28 +1,80 @@
 <template>
-  <button @click="add()">新增卡片</button>
+  <button class="button-insert" @click="openAddmode()">新增卡片</button>
   <div class="kanban-board">
     <div v-for="(column, index) in columns" :key="index" class="kanban-column" :class=column.class >
       <h3>{{ column.name }}</h3>
       <draggable v-model="column.tasks" :group="{ name: 'tasks', put: true }" itemKey="id" @change="log">
         <template #item="{ element }" >
-          <div class="kanban-task" @click="edit(element)" > 
-            <a class="title">{{ element.title }}</a>
-            {{ element.content }}
-            {{ element.id }}
-            {{ element.date }}
+          <div class="kanban-task"  @dblclick="openEditmode(element)" > 
+          <div class = "row slim"><label for ="name1" >標題</label><div class="content">{{ element.title }}</div> </div> 
+          <div class = "row slim"><label >內容</label><div class="content">{{ element.content }}</div> </div> 
+          <div class = "row slim"><label >編號</label><div class="content">{{ element.id }}</div> </div> 
+          <div class = "row slim"><label >時間</label><div class="content">{{ element.date }}</div> </div> 
           </div>
         </template>
       </draggable>
     </div>
   </div>
+  <CardFactory :type="cardFactoryType" :card="editCard" v-if="isOpenCardFactory" @close="boxCloseEvent" @done="boxDoneEvent" @delete="deleteEvent"/>
 </template>
 
 <script lang="ts" setup>
-import { reactive } from 'vue';
+import { reactive,ref } from 'vue';
 import draggable from 'vuedraggable';
 import { useStore } from 'vuex';
 import { key } from '@/store';
-import { CardType }from '@/lib/enum/typeEnum'
+import { CardTypeEnum,cardFactoryTypeEnum }from '@/lib/enum/typeEnum'
+import CardFactory from '@/components/CardFactory.vue'; 
+
+const isOpenCardFactory = ref(false); 
+const cardFactoryType = ref("");
+let editCard:Card = {};
+
+const openAddmode = () => {
+    cardFactoryType.value = cardFactoryTypeEnum.add;
+    isOpenCardFactory.value = true;
+  };
+
+const openEditmode = (card :Card) => {
+  editCard = card;
+  cardFactoryType.value = cardFactoryTypeEnum.edit;
+  isOpenCardFactory.value = true;
+};
+
+const boxCloseEvent = (type: boolean) => {
+      isOpenCardFactory.value = type;
+      editCard = {};
+  };
+
+const boxDoneEvent = (newCard: Card) => {
+      isOpenCardFactory.value = false;
+      if(cardFactoryType.value === cardFactoryTypeEnum.add){
+        todo.tasks.push(newCard);
+        store.state.Cards.push(newCard);
+      }
+      else{
+        if(Object.values(CardTypeEnum).includes(newCard.type!)){
+          var card = columnTasks[newCard.type!].find(column => column.id === newCard.id!);
+          card!.title = newCard.title;
+          card!.content = newCard.content;
+
+          const storedata = store.state.Cards.find(card => card.id === newCard.id);
+          storedata!.title = newCard.title;
+          storedata!.content = newCard.content;
+        }
+      }
+  };
+
+  const deleteEvent = (deletCard: Card) => {
+    var index = -1;
+    if(Object.values(CardTypeEnum).includes(deletCard.type!)){
+      var index = columnTasks[deletCard.type!].findIndex(card => card.id === deletCard.id);
+      if (index > -1)  columnTasks[deletCard.type!].splice(index, 1);
+      var storeIndex = store.state.Cards.findIndex(card => card.id === deletCard.id);
+      if (storeIndex > -1)  store.state.Cards.splice(storeIndex, 1);
+    }
+    isOpenCardFactory.value = false;
+  }
 
 let columns = reactive<Column[]>([
   {
@@ -65,23 +117,18 @@ const columnTasks: { [key: number]: Card[] } = {
 
 
 store.state.Cards.forEach(card => {
-  const tasks = columnTasks[card.type];
+  const tasks = columnTasks[card.type!];
   if (tasks) {
     tasks.push(card);
   }
 });
   
 
-
 // const add = () => {
 //   columns[0].tasks.push({ name: "Juan " , id: 123 })
 // };
 
-const edit = (data:any) => {
-  
-  data.id =123
-  data.name ='QQQQ'
-};
+
 
 const log = (evt: any) => {
   const { added } = evt;
@@ -94,20 +141,20 @@ const log = (evt: any) => {
 
       const isCardInList = (list: any[]) => list.some(card => card.id === changer.element.id);
 
-      let newType: CardType | undefined;
+      let newType: CardTypeEnum | undefined;
 
       if (isCardInList(todo.tasks)) {
-        newType = CardType.Todo;
+        newType = CardTypeEnum.Todo;
       } else if (isCardInList(doing.tasks)) {
-        newType = CardType.Doing;
+        newType = CardTypeEnum.Doing;
       } else if (isCardInList(pending.tasks)) {
-        newType = CardType.Pending;
+        newType = CardTypeEnum.Pending;
       } else if (isCardInList(done.tasks)) {
-        newType = CardType.Done;
+        newType = CardTypeEnum.Done;
       }
 
       if (newType !== undefined) {
-        updatedata.typeName = CardType[newType];
+        updatedata.typeName = CardTypeEnum[newType];
         updatedata.type = newType;
       }
     }
@@ -130,35 +177,34 @@ $color-done: #9cd6ff;
   justify-content: center;
 
     h3{    
-      border-radius: 5px;
       padding: 10px 0px;
       margin: 5px;
-      width: 100%;
+      border-bottom: solid;
     }
 
     .kanban-column {
       background-color: #f4f4f4;
-      padding: 16px;
       padding-top: 0px;
-      // border-radius: 8px;
-      width: 200px;
+      width: 45vh;
 
       &.todo{background-color: $color-todo;}
-
       &.doing{background-color:$color-doing;}
-      
       &.pending{background-color:$color-pending;}
-
       &.done{background-color: $color-done;}
     }
-
-
 
   .kanban-task {
     background-color: #ffffff;
     padding: 8px;
     border: 1px solid #ddd;
-    margin-bottom: 8px;
+    margin: 8px  15px 8px 15px ;
+    cursor: pointer;
+    &:hover{
+    border: 3px solid #fadd5e;
+    }
+    &:active{
+      cursor:grab;
+    }
   }
 }
 
