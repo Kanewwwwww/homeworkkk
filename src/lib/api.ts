@@ -3,7 +3,8 @@ import axios from 'axios';
 const API_BASE_URL = '';
 const API_HEADERS = {
   'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin':'*'
+  'Access-Control-Allow-Origin':'*',
+  'cache-control': 'no-cache',
 };
 
 // 創建一個 Axios 實例
@@ -31,6 +32,8 @@ const apiClient = axios.create({
 
 
 
+
+
 export const getCard = async (): Promise<RardResponse> => {
   try {
     const response = await apiClient.post<RardResponse>('/api/sample/Card/v1/getCard');
@@ -42,9 +45,9 @@ export const getCard = async (): Promise<RardResponse> => {
 };
 
 
-export const post = async<TRequest, TResponse> (url: string, param: TRequest): Promise<TResponse> => {
+export const insert = async<TRequest, TResponse> ( param: TRequest): Promise<TResponse> => {
     try {
-      const response = await apiClient.post<TResponse>(url,{param});
+      const response = await apiClient.post<TResponse>('/api/sample/Card/v1/insert',param);
       return response.data;
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -52,3 +55,25 @@ export const post = async<TRequest, TResponse> (url: string, param: TRequest): P
     }
   };
 
+
+  
+  export const update = async<TRequest, TResponse> ( param: TRequest): Promise<TResponse> => {
+    try {
+      const response = await apiClient.post<TResponse>('/api/sample/Card/v1/update',param);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      throw error;
+    }
+  };
+
+    
+  export const del = async<TRequest, TResponse> ( param: TRequest): Promise<TResponse> => {
+    try {
+      const response = await apiClient.post<TResponse>('/api/sample/Card/v1/delete',param);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      throw error;
+    }
+  };
