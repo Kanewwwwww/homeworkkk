@@ -72,7 +72,7 @@ const done = async () => {
 };
 
 
-const deleteEvent = async () => {
+const deleteEvent = async () => {https://github.com/Kanewwwwww/homeworkkk/blob/main/src/components/CardFactory.vue
   // let result =  await deletCard(cardModel);
   // if(result){
   //   emit('delete', cardModel);
@@ -93,72 +93,7 @@ const init = () => {
   }
 };
 
-let insertCards = async (card:Card) => {
-      try {
-        let postData = {
-            "header": {
-                "apiCode":"0000",
-                "userId":"20167"
-            },
-            "body": card
-        }
 
-
-        let result = await insert(postData);
-        if(result.header.resultCode === '0000'){
-          console.error(result);
-          return result.body;
-        }
-        else { throw new Error();
-        }
-      } catch (error) {
-        console.error('Error fatch data:');
-      }
-};
-
-let updateCards = async (card:Card) => {
-  try {
-    let postData = {
-        "header": {
-            "apiCode":"0000",
-            "userId":"20167"
-        },
-        "body": card
-    }
-
-    let result = await update(postData);
-    if(result.header.resultCode === '0000'){
-      console.error(result);
-      return result.body;
-    }
-    else { throw new Error();
-    }
-  } catch (error) {
-    console.error('Error fatch data:');
-  }
-};
-
-let deletCard = async (card:Card) => {
-  try {
-    let postData = {
-        "header": {
-            "apiCode":"0000",
-            "userId":"20167"
-        },
-        "body": card
-    }
-
-    let result = await del(postData);
-    if(result.header.resultCode === '0000'){
-      console.error(result);
-      return result.body;
-    }
-    else { throw new Error();
-    }
-  } catch (error) {
-    console.error('Error fatch data:');
-  }
-};
 
 onMounted(() => {
   init();
